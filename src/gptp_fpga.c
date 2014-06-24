@@ -151,11 +151,10 @@ void ptp_setup_event_timer(struct ptp_device *ptp, int port,
 			   PtpPlatformData * platformData)
 {
 	iowrite32((((platformData->timerPrescaler -
-		     1) & PTP_PRESCALER_MASK) | (((platformData->
-						   timerDivider -
-						   1) & PTP_DIVIDER_MASK)
-						 << PTP_DIVIDER_SHIFT)),
-		  REGISTER_ADDRESS(ptp, 0, PTP_TIMER_REG));
+		     1) & PTP_PRESCALER_MASK) |
+		   (((platformData->timerDivider - 1) & PTP_DIVIDER_MASK)
+		    << PTP_DIVIDER_SHIFT)), REGISTER_ADDRESS(ptp, 0,
+							     PTP_TIMER_REG));
 }
 
 uint32_t ptp_setup_interrupt(struct ptp_device *ptp)
@@ -262,8 +261,9 @@ void get_hardware_timestamp(struct ptp_device *ptp,
 			ptp->ports[port].txPhyMacDelay.nanoseconds =
 			    -ptp->ports[port].txPhyMacDelay.nanoseconds;
 			timestamp_difference(&tempTimestamp,
-					     &ptp->ports[port].
-					     txPhyMacDelay, timestamp);
+					     &ptp->
+					     ports[port].txPhyMacDelay,
+					     timestamp);
 			ptp->ports[port].txPhyMacDelay.nanoseconds =
 			    -ptp->ports[port].txPhyMacDelay.nanoseconds;
 		} else {
@@ -283,8 +283,9 @@ void get_hardware_timestamp(struct ptp_device *ptp,
 			    -ptp->ports[port].rxPhyMacDelay.nanoseconds;
 		} else {
 			timestamp_difference(&tempTimestamp,
-					     &ptp->ports[port].
-					     rxPhyMacDelay, timestamp);
+					     &ptp->
+					     ports[port].rxPhyMacDelay,
+					     timestamp);
 		}
 	}
 }
@@ -328,8 +329,9 @@ void get_local_hardware_timestamp(struct ptp_device *ptp,
 			ptp->ports[port].txPhyMacDelay.nanoseconds =
 			    -ptp->ports[port].txPhyMacDelay.nanoseconds;
 			timestamp_difference(&tempTimestamp,
-					     &ptp->ports[port].
-					     txPhyMacDelay, timestamp);
+					     &ptp->
+					     ports[port].txPhyMacDelay,
+					     timestamp);
 			ptp->ports[port].txPhyMacDelay.nanoseconds =
 			    -ptp->ports[port].txPhyMacDelay.nanoseconds;
 		} else {
@@ -349,8 +351,9 @@ void get_local_hardware_timestamp(struct ptp_device *ptp,
 			    -ptp->ports[port].rxPhyMacDelay.nanoseconds;
 		} else {
 			timestamp_difference(&tempTimestamp,
-					     &ptp->ports[port].
-					     rxPhyMacDelay, timestamp);
+					     &ptp->
+					     ports[port].rxPhyMacDelay,
+					     timestamp);
 		}
 	}
 }
@@ -400,8 +403,8 @@ void set_rtc_increment(struct ptp_device *ptp, RtcIncrement * increment)
 
 	/* Assemble a single value from the increment components */
 	incrementWord =
-	    ((increment->
-	      mantissa & RTC_MANTISSA_MASK) << RTC_MANTISSA_SHIFT);
+	    ((increment->mantissa & RTC_MANTISSA_MASK) <<
+	     RTC_MANTISSA_SHIFT);
 	incrementWord |= (increment->fraction & RTC_FRACTION_MASK);
 	incrementWord |= PTP_RTC_ENABLE;
 

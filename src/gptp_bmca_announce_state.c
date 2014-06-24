@@ -49,8 +49,8 @@ static void print_priority_vector(const char *str,
 	     str, pv->rootSystemIdentity.priority1,
 	     pv->rootSystemIdentity.clockClass,
 	     pv->rootSystemIdentity.clockAccuracy,
-	     get_offset_scaled_log_variance(pv->rootSystemIdentity.
-					    offsetScaledLogVariance),
+	     get_offset_scaled_log_variance(pv->
+					    rootSystemIdentity.offsetScaledLogVariance),
 	     pv->rootSystemIdentity.priority2,
 	     pv->rootSystemIdentity.clockIdentity[0],
 	     pv->rootSystemIdentity.clockIdentity[1],
@@ -149,8 +149,8 @@ int8_t qualifyAnnounce(struct ptp_device * ptp, uint32_t port)
 
 	stepsRemoved =
 	    get_rx_announce_steps_removed(ptp, port,
-					  ptp->ports[port].
-					  rcvdAnnouncePtr);
+					  ptp->
+					  ports[port].rcvdAnnouncePtr);
 
 	BMCA_DBG_2("QA: SR %d\n", stepsRemoved);
 
@@ -168,8 +168,9 @@ int8_t qualifyAnnounce(struct ptp_device * ptp, uint32_t port)
 	for (i = 0; i < pathTraceLength; i++) {
 		if (0 ==
 		    memcmp(pathTrace[i],
-			   ptp->systemPriority.sourcePortIdentity.
-			   clockIdentity, sizeof(PtpClockIdentity))) {
+			   ptp->systemPriority.
+			   sourcePortIdentity.clockIdentity,
+			   sizeof(PtpClockIdentity))) {
 			BMCA_DBG_2("QA: PT includes our clock\n");
 			return FALSE;
 		}
@@ -184,8 +185,9 @@ int8_t qualifyAnnounce(struct ptp_device * ptp, uint32_t port)
 		if (pathTraceLength < PTP_MAX_PATH_TRACE) {
 			/* Add ourselves at the end for when we forward this along. */
 			memcpy(ptp->pathTrace + pathTraceLength,
-			       ptp->systemPriority.sourcePortIdentity.
-			       clockIdentity, sizeof(PtpClockIdentity));
+			       ptp->systemPriority.
+			       sourcePortIdentity.clockIdentity,
+			       sizeof(PtpClockIdentity));
 			ptp->pathTraceLength++;
 		}
 	}
@@ -386,16 +388,14 @@ void PortAnnounceInformation_StateMachine(struct ptp_device *ptp,
 				} else {
 					int syncTimeout =
 					    (pPort->syncTimeoutCounter >=
-					     pPort->
-					     syncReceiptTimeoutTime);
+					     pPort->syncReceiptTimeoutTime);
 					int announceTimeout =
-					    (pPort->
-					     announceTimeoutCounter >=
+					    (pPort->announceTimeoutCounter
+					     >=
 					     ANNOUNCE_INTERVAL_TICKS(ptp,
 								     port)
 					     *
-					     pPort->
-					     announceReceiptTimeout);
+					     pPort->announceReceiptTimeout);
 					if ((pPort->infoIs ==
 					     InfoIs_Received)
 					    && (announceTimeout
@@ -406,17 +406,13 @@ void PortAnnounceInformation_StateMachine(struct ptp_device *ptp,
 
 						BMCA_DBG
 						    ("Announce AGED: (announce %d >= %d || sync %dms > %dms)\n",
-						     pPort->
-						     announceTimeoutCounter,
+						     pPort->announceTimeoutCounter,
 						     ANNOUNCE_INTERVAL_TICKS
 						     (ptp,
 						      port) *
-						     pPort->
-						     announceReceiptTimeout,
-						     pPort->
-						     syncTimeoutCounter,
-						     pPort->
-						     syncReceiptTimeoutTime);
+						     pPort->announceReceiptTimeout,
+						     pPort->syncTimeoutCounter,
+						     pPort->syncReceiptTimeoutTime);
 
 						PortAnnounceInformation_StateMachine_SetState
 						    (ptp, port,
@@ -424,12 +420,12 @@ void PortAnnounceInformation_StateMachine(struct ptp_device *ptp,
 
 						/* Update stats */
 						if (announceTimeout) {
-							pPort->stats.
-							    announceReceiptTimeoutCount++;
+							pPort->
+							    stats.announceReceiptTimeoutCount++;
 						}
 						if (syncTimeout) {
-							pPort->stats.
-							    syncReceiptTimeoutCount++;
+							pPort->
+							    stats.syncReceiptTimeoutCount++;
 						}
 					}
 				}
@@ -504,11 +500,12 @@ static void updtRolesTree(struct ptp_device *ptp)
 			memcpy(&pPort->gmPathPriority,
 			       &pPort->messagePriority,
 			       sizeof(PtpPriorityVector));
-			set_steps_removed(pPort->gmPathPriority.
-					  stepsRemoved,
+			set_steps_removed(pPort->
+					  gmPathPriority.stepsRemoved,
 					  (get_steps_removed
-					   (pPort->messagePriority.
-					    stepsRemoved) + 1));
+					   (pPort->
+					    messagePriority.stepsRemoved) +
+					   1));
 		} else {
 			memset(&pPort->gmPathPriority, 0xFF,
 			       sizeof(PtpPriorityVector));
@@ -520,22 +517,21 @@ static void updtRolesTree(struct ptp_device *ptp)
 	ptp->masterStepsRemoved = 0;
 	for (i = 0; i < ptp->numPorts; i++) {
 		if (0 !=
-		    compare_clock_identity(ptp->systemPriority.
-					   rootSystemIdentity.
-					   clockIdentity,
-					   ptp->ports[i].gmPathPriority.
-					   rootSystemIdentity.
-					   clockIdentity)) {
+		    compare_clock_identity(ptp->
+					   systemPriority.rootSystemIdentity.clockIdentity,
+					   ptp->ports[i].
+					   gmPathPriority.rootSystemIdentity.clockIdentity))
+		{
 			if (REPLACE_PRESENT_MASTER ==
 			    bmca_comparison(ptp->gmPriority,
-					    &ptp->ports[i].
-					    gmPathPriority)) {
+					    &ptp->
+					    ports[i].gmPathPriority)) {
 				ptp->gmPriority =
 				    &ptp->ports[i].gmPathPriority;
 				ptp->masterStepsRemoved =
 				    (get_steps_removed
-				     (ptp->ports[i].messagePriority.
-				      stepsRemoved) + 1);
+				     (ptp->ports[i].
+				      messagePriority.stepsRemoved) + 1);
 			}
 		}
 	}
@@ -550,12 +546,13 @@ static void updtRolesTree(struct ptp_device *ptp)
 		/* masterPriority */
 		memcpy(&pPort->masterPriority, ptp->gmPriority,
 		       sizeof(PtpPriorityVector));
-		memcpy(pPort->masterPriority.sourcePortIdentity.
-		       clockIdentity,
-		       ptp->systemPriority.sourcePortIdentity.
-		       clockIdentity, sizeof(PtpClockIdentity));
-		set_port_number(pPort->masterPriority.sourcePortIdentity.
-				portNumber, (i + 1));
+		memcpy(pPort->masterPriority.
+		       sourcePortIdentity.clockIdentity,
+		       ptp->systemPriority.
+		       sourcePortIdentity.clockIdentity,
+		       sizeof(PtpClockIdentity));
+		set_port_number(pPort->masterPriority.
+				sourcePortIdentity.portNumber, (i + 1));
 		set_port_number(pPort->masterPriority.portNumber, (i + 1));
 
 		/* selectedRole */
@@ -569,8 +566,9 @@ static void updtRolesTree(struct ptp_device *ptp)
 			pPort->selectedRole = PTP_MASTER;
 			pPort->pathTraceLength = 1;
 			memcpy(pPort->pathTrace[0],
-			       ptp->systemPriority.rootSystemIdentity.
-			       clockIdentity, sizeof(PtpClockIdentity));
+			       ptp->systemPriority.
+			       rootSystemIdentity.clockIdentity,
+			       sizeof(PtpClockIdentity));
 			pPort->updtInfo = TRUE;
 			break;
 
@@ -578,8 +576,9 @@ static void updtRolesTree(struct ptp_device *ptp)
 			pPort->selectedRole = PTP_MASTER;
 			pPort->pathTraceLength = 1;
 			memcpy(pPort->pathTrace[0],
-			       ptp->systemPriority.rootSystemIdentity.
-			       clockIdentity, sizeof(PtpClockIdentity));
+			       ptp->systemPriority.
+			       rootSystemIdentity.clockIdentity,
+			       sizeof(PtpClockIdentity));
 			if ((pPort->portStepsRemoved !=
 			     ptp->masterStepsRemoved)
 			    || (IS_PRESENT_MASTER !=
@@ -602,8 +601,9 @@ static void updtRolesTree(struct ptp_device *ptp)
 				pPort->selectedRole = PTP_MASTER;
 				pPort->pathTraceLength = 1;
 				memcpy(pPort->pathTrace[0],
-				       ptp->systemPriority.
-				       rootSystemIdentity.clockIdentity,
+				       ptp->
+				       systemPriority.rootSystemIdentity.
+				       clockIdentity,
 				       sizeof(PtpClockIdentity));
 				pPort->updtInfo = TRUE;
 			} else {
@@ -658,8 +658,9 @@ static void updtRolesTree(struct ptp_device *ptp)
 		/* Init the path array with thisClock */
 		ptp->pathTraceLength = 1;
 		memcpy(&ptp->pathTrace[0],
-		       ptp->systemPriority.rootSystemIdentity.
-		       clockIdentity, sizeof(PtpClockIdentity));
+		       ptp->systemPriority.
+		       rootSystemIdentity.clockIdentity,
+		       sizeof(PtpClockIdentity));
 	}
 
 	if (0 !=
@@ -686,8 +687,8 @@ static void updtRolesTree(struct ptp_device *ptp)
 					      ptp->gmPriority);
 			for (i = 0; i < ptp->numPorts; i++) {
 				printk("PRS: Port %d, Role %s\n", i,
-				       roleString(ptp->ports[i].
-						  selectedRole));
+				       roleString(ptp->
+						  ports[i].selectedRole));
 			}
 		}
 #endif

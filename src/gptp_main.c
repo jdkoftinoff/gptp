@@ -380,32 +380,31 @@ static int ptp_device_ioctl(struct inode *inode, struct file *filp,
 			ptp->systemPriority.rootSystemIdentity.priority1 =
 			    ptp->properties.grandmasterPriority1;
 			ptp->systemPriority.rootSystemIdentity.clockClass =
-			    ptp->properties.grandmasterClockQuality.
-			    clockClass;
-			ptp->systemPriority.rootSystemIdentity.
-			    clockAccuracy =
-			    ptp->properties.grandmasterClockQuality.
-			    clockAccuracy;
-			set_offset_scaled_log_variance(ptp->systemPriority.
-						       rootSystemIdentity.
-						       offsetScaledLogVariance,
-						       ptp->properties.
-						       grandmasterClockQuality.
-						       offsetScaledLogVariance);
+			    ptp->properties.
+			    grandmasterClockQuality.clockClass;
+			ptp->systemPriority.
+			    rootSystemIdentity.clockAccuracy =
+			    ptp->properties.
+			    grandmasterClockQuality.clockAccuracy;
+			set_offset_scaled_log_variance(ptp->
+						       systemPriority.rootSystemIdentity.offsetScaledLogVariance,
+						       ptp->
+						       properties.grandmasterClockQuality.offsetScaledLogVariance);
 			ptp->systemPriority.rootSystemIdentity.priority2 =
 			    ptp->properties.grandmasterPriority2;
-			memcpy(ptp->systemPriority.rootSystemIdentity.
-			       clockIdentity,
+			memcpy(ptp->systemPriority.
+			       rootSystemIdentity.clockIdentity,
 			       ptp->properties.grandmasterIdentity,
 			       sizeof(PtpClockIdentity));
 			set_steps_removed(ptp->systemPriority.stepsRemoved,
 					  0);
-			memcpy(ptp->systemPriority.sourcePortIdentity.
-			       clockIdentity,
+			memcpy(ptp->systemPriority.
+			       sourcePortIdentity.clockIdentity,
 			       ptp->properties.grandmasterIdentity,
 			       sizeof(PtpClockIdentity));
-			set_port_number(ptp->systemPriority.
-					sourcePortIdentity.portNumber, 0);
+			set_port_number(ptp->
+					systemPriority.sourcePortIdentity.
+					portNumber, 0);
 			set_port_number(ptp->systemPriority.portNumber, 0);
 
 			spin_unlock_irqrestore(&ptp->mutex, flags);
@@ -437,12 +436,13 @@ static int ptp_device_ioctl(struct inode *inode, struct file *filp,
 
 			/* Copy data from the port structure */
 			memcpy(properties.sourceMacAddress,
-			       ptp->ports[properties.portNumber].
-			       portProperties.sourceMacAddress,
-			       MAC_ADDRESS_BYTES);
+			       ptp->ports[properties.
+					  portNumber].portProperties.
+			       sourceMacAddress, MAC_ADDRESS_BYTES);
 			properties.stepsRemoved =
-			    ptp->ports[properties.portNumber].
-			    portProperties.stepsRemoved;
+			    ptp->ports[properties.
+				       portNumber].portProperties.
+			    stepsRemoved;
 
 			/* Copy the properties into the userspace argument */
 			copyResult =
@@ -474,8 +474,9 @@ static int ptp_device_ioctl(struct inode *inode, struct file *filp,
 			spin_lock_irqsave(&ptp->mutex, flags);
 
 			/* Copy writeable data to the port structure */
-			memcpy(ptp->ports[properties.portNumber].
-			       portProperties.sourceMacAddress,
+			memcpy(ptp->
+			       ports[properties.portNumber].portProperties.
+			       sourceMacAddress,
 			       properties.sourceMacAddress,
 			       MAC_ADDRESS_BYTES);
 
@@ -659,21 +660,21 @@ static int ptp_device_ioctl(struct inode *inode, struct file *filp,
 			    ptp->gmPriority->rootSystemIdentity.priority1;
 			presentMaster.grandmasterClockQuality.clockClass =
 			    ptp->gmPriority->rootSystemIdentity.clockClass;
-			presentMaster.grandmasterClockQuality.
-			    clockAccuracy =
-			    ptp->gmPriority->rootSystemIdentity.
-			    clockAccuracy;
-			presentMaster.grandmasterClockQuality.
-			    offsetScaledLogVariance =
-			    get_offset_scaled_log_variance(ptp->
-							   gmPriority->
-							   rootSystemIdentity.
-							   offsetScaledLogVariance);
+			presentMaster.
+			    grandmasterClockQuality.clockAccuracy =
+			    ptp->gmPriority->
+			    rootSystemIdentity.clockAccuracy;
+			presentMaster.
+			    grandmasterClockQuality.offsetScaledLogVariance
+			    =
+			    get_offset_scaled_log_variance
+			    (ptp->gmPriority->rootSystemIdentity.offsetScaledLogVariance);
 			presentMaster.grandmasterPriority2 =
 			    ptp->gmPriority->rootSystemIdentity.priority2;
 			memcpy(presentMaster.grandmasterIdentity,
-			       ptp->gmPriority->rootSystemIdentity.
-			       clockIdentity, sizeof(PtpClockIdentity));
+			       ptp->gmPriority->
+			       rootSystemIdentity.clockIdentity,
+			       sizeof(PtpClockIdentity));
 			if (0 !=
 			    copy_to_user((void __user *) arg,
 					 &presentMaster,
@@ -873,8 +874,8 @@ static int ptp_probe(const char *name,
 
 		for (byteIndex = 0; byteIndex < MAC_ADDRESS_BYTES;
 		     byteIndex++) {
-			ptp->ports[i].portProperties.
-			    sourceMacAddress[byteIndex] =
+			ptp->ports[i].
+			    portProperties.sourceMacAddress[byteIndex] =
 			    DEFAULT_SOURCE_MAC[byteIndex];
 		}
 
@@ -918,12 +919,10 @@ static int ptp_probe(const char *name,
 	    ptp->properties.grandmasterClockQuality.clockClass;
 	ptp->systemPriority.rootSystemIdentity.clockAccuracy =
 	    ptp->properties.grandmasterClockQuality.clockAccuracy;
-	set_offset_scaled_log_variance(ptp->systemPriority.
-				       rootSystemIdentity.
-				       offsetScaledLogVariance,
-				       ptp->properties.
-				       grandmasterClockQuality.
-				       offsetScaledLogVariance);
+	set_offset_scaled_log_variance(ptp->
+				       systemPriority.rootSystemIdentity.offsetScaledLogVariance,
+				       ptp->
+				       properties.grandmasterClockQuality.offsetScaledLogVariance);
 	ptp->systemPriority.rootSystemIdentity.priority2 =
 	    ptp->properties.grandmasterPriority2;
 	memcpy(ptp->systemPriority.rootSystemIdentity.clockIdentity,
@@ -962,8 +961,8 @@ static int ptp_probe(const char *name,
 		       GPTP_RTC_INC_MIN, GPTP_RTC_INC_MAX);
 		goto unmap;
 	}
-	if ((platformData->nominalIncrement.
-	     fraction & ~RTC_FRACTION_MASK) != 0) {
+	if ((platformData->
+	     nominalIncrement.fraction & ~RTC_FRACTION_MASK) != 0) {
 		returnValue = -EINVAL;
 		printk(KERN_ERR
 		       "%s: Nominal RTC increment fraction (0x%08X) has > %d significant bits\n",

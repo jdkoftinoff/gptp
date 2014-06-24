@@ -102,33 +102,29 @@ void gptp_timer_state_task(unsigned long data)
 						   we will forward sync/fup messages when we receive them from the GM. */
 						if (localMaster) {
 							/* Set the source port ID back to this node when we are the GM */
-							memcpy(&ptp->
-							       ports[i].
-							       syncSourcePortId
+							memcpy(&ptp->ports
+							       [i].syncSourcePortId
 							       [0],
-							       &ptp->
-							       properties.
-							       grandmasterIdentity
+							       &ptp->properties.grandmasterIdentity
 							       [0], 8);
-							ptp->ports[i].
-							    syncSourcePortId
+							ptp->
+							    ports
+							    [i].syncSourcePortId
 							    [8] =
 							    (i + 1) >> 8;
-							ptp->ports[i].
-							    syncSourcePortId
+							ptp->
+							    ports
+							    [i].syncSourcePortId
 							    [9] = (i + 1);
 
 							transmit_sync(ptp,
 								      i);
-							if (ptp->
-							    rtcChangesAllowed)
-							{
+							if (ptp->rtcChangesAllowed) {
 								/* Periodically update the RTC to get update listeners to
 								   notice (IE when they are not coasting) */
 								set_rtc_increment
 								    (ptp,
-								     &ptp->
-								     nominalIncrement);
+								     &ptp->nominalIncrement);
 							}
 						}
 					}
@@ -145,9 +141,9 @@ void gptp_timer_state_task(unsigned long data)
 					preempt_disable();
 					spin_lock_irqsave(&ptp->mutex,
 							  flags);
-					ptp->ports[i].
-					    announceTimeoutCounter +=
-					    timerTicks;
+					ptp->
+					    ports[i].announceTimeoutCounter
+					    += timerTicks;
 					ptp->ports[i].syncTimeoutCounter +=
 					    timerTicks;
 					spin_unlock_irqrestore(&ptp->mutex,
@@ -177,11 +173,13 @@ void gptp_timer_state_task(unsigned long data)
 						for (i = 0;
 						     i < ptp->numPorts;
 						     i++) {
-							ptp->ports[i].
-							    announceCounter
+							ptp->
+							    ports
+							    [i].announceCounter
 							    = 0;
-							ptp->ports[i].
-							    announceSequenceId
+							ptp->
+							    ports
+							    [i].announceSequenceId
 							    = 0x0000;
 							transmit_announce
 							    (ptp, i);
@@ -190,25 +188,23 @@ void gptp_timer_state_task(unsigned long data)
 						/* Still a slave; determine whether we are using the end-to-end or peer-to-peer
 						 * delay mechanism
 						 */
-						if (ptp->properties.
-						    delayMechanism ==
+						if (ptp->
+						    properties.delayMechanism
+						    ==
 						    PTP_DELAY_MECHANISM_E2E)
 						{
 							/* Increment the delay request counter and see if it's time to
 							 * send one to the master.
 							 */
-							if (++ptp->
-							    ports[i].
-							    delayReqCounter
+							if (++ptp->ports
+							    [i].delayReqCounter
 							    >=
 							    (DELAY_REQ_INTERVAL
 							     /
 							     PTP_TIMER_TICK_MS))
 							{
-								ptp->
-								    ports
-								    [i].
-								    delayReqCounter
+								ptp->ports
+								    [i].delayReqCounter
 								    = 0;
 								transmit_delay_request
 								    (ptp,
@@ -382,21 +378,22 @@ static void process_rx_sync(struct ptp_device *ptp, uint32_t port,
 						timestamp_difference
 						    (&syncRxTimestamp,
 						     &linkDelay,
-						     &ptp->ports[i].
-						     syncRxTimestamp);
+						     &ptp->
+						     ports
+						     [i].syncRxTimestamp);
 						get_source_port_id(ptp,
 								   port,
 								   RECEIVED_PACKET,
 								   rxBuffer,
-								   &ptp->
-								   ports
-								   [i].
-								   syncSourcePortId
+								   &ptp->ports
+								   [i].syncSourcePortId
 								   [0]);
-						ptp->ports[i].
-						    syncSequenceId =
-						    ptp->ports[port].
-						    syncSequenceId;
+						ptp->
+						    ports[i].syncSequenceId
+						    =
+						    ptp->
+						    ports
+						    [port].syncSequenceId;
 						transmit_sync(ptp, i);
 					}
 				}
@@ -470,14 +467,17 @@ static void process_rx_fup(struct ptp_device *ptp, uint32_t port,
 		/* Save off the timestamp and correction field info for any ports that need to forward it */
 		for (i = 0; i < ptp->numPorts; i++) {
 			if (ptp->ports[i].selectedRole == PTP_MASTER) {
-				timestamp_copy(&ptp->ports[i].
-					       lastPreciseOriginTimestamp,
+				timestamp_copy(&ptp->
+					       ports
+					       [i].lastPreciseOriginTimestamp,
 					       &syncTxTimestamp);
-				timestamp_copy(&ptp->ports[i].
-					       lastFollowUpCorrectionField,
+				timestamp_copy(&ptp->
+					       ports
+					       [i].lastFollowUpCorrectionField,
 					       &correctionField);
-				ptp->ports[i].
-				    fupPreciseOriginTimestampReceived =
+				ptp->
+				    ports
+				    [i].fupPreciseOriginTimestampReceived =
 				    TRUE;
 			}
 		}
@@ -544,20 +544,21 @@ static void process_rx_fup(struct ptp_device *ptp, uint32_t port,
 						  &ptp->nominalIncrement);
 				set_rtc_time_adjusted(ptp,
 						      &correctedTimestamp,
-						      &ptp->ports[port].
-						      syncRxTimestampTemp);
+						      &ptp->
+						      ports
+						      [port].syncRxTimestampTemp);
 				ptp->rtcReset = FALSE;
 			}
 		} else {
 			/* Less than a second, leave these timestamps and update the servo */
 #ifdef SYNC_DEBUG
 			printk("Sync Rx: %08X%08X.%08X\n",
-			       ptp->ports[port].syncRxTimestampTemp.
-			       secondsUpper,
-			       ptp->ports[port].syncRxTimestampTemp.
-			       secondsLower,
-			       ptp->ports[port].syncRxTimestampTemp.
-			       nanoseconds);
+			       ptp->ports[port].
+			       syncRxTimestampTemp.secondsUpper,
+			       ptp->ports[port].
+			       syncRxTimestampTemp.secondsLower,
+			       ptp->ports[port].
+			       syncRxTimestampTemp.nanoseconds);
 			printk
 			    ("Sync Tx: %08X%08X.%08X (corrected: %08X%08X.%08X\n",
 			     syncTxTimestamp.secondsUpper,
@@ -581,8 +582,8 @@ static void process_rx_fup(struct ptp_device *ptp, uint32_t port,
 		/* Forward the follow-up to any master ports */
 		for (i = 0; i < ptp->numPorts; i++) {
 			if (ptp->ports[i].selectedRole == PTP_MASTER) {
-				if (ptp->ports[i].
-				    syncTxLocalTimestampValid) {
+				if (ptp->
+				    ports[i].syncTxLocalTimestampValid) {
 					transmit_fup(ptp, i);
 				}
 			}
@@ -658,24 +659,28 @@ static void process_rx_delay_resp(struct ptp_device *ptp, uint32_t port,
 		 * and FUP mechanism.
 		 */
 		timestamp_difference(&delayReqRxTimestamp,
-				     &ptp->ports[port].
-				     delayReqTxTimestampTemp, &difference);
+				     &ptp->
+				     ports[port].delayReqTxTimestampTemp,
+				     &difference);
 		timestamp_abs(&difference, &absDifference);
 		if ((absDifference.secondsUpper == 0)
 		    && (absDifference.secondsLower == 0)) {
 			/* Less than a second, leave these timestamps */
 			preempt_disable();
 			spin_lock_irqsave(&ptp->mutex, flags);
-			timestamp_copy(&ptp->ports[port].
-				       delayReqTxTimestamp,
-				       &ptp->ports[port].
-				       delayReqTxTimestampTemp);
-			timestamp_copy(&ptp->ports[port].
-				       delayReqTxLocalTimestamp,
-				       &ptp->ports[port].
-				       delayReqTxLocalTimestampTemp);
-			timestamp_copy(&ptp->ports[port].
-				       delayReqRxTimestamp,
+			timestamp_copy(&ptp->
+				       ports[port].delayReqTxTimestamp,
+				       &ptp->
+				       ports
+				       [port].delayReqTxTimestampTemp);
+			timestamp_copy(&ptp->
+				       ports
+				       [port].delayReqTxLocalTimestamp,
+				       &ptp->
+				       ports
+				       [port].delayReqTxLocalTimestampTemp);
+			timestamp_copy(&ptp->
+				       ports[port].delayReqRxTimestamp,
 				       &delayReqRxTimestamp);
 			ptp->ports[port].delayReqTimestampsValid = 1;
 			spin_unlock_irqrestore(&ptp->mutex, flags);
@@ -703,8 +708,8 @@ static void process_rx_pdelay_req(struct ptp_device *ptp, uint32_t port,
 			   (uint8_t *) & rxIdentity);
 	if (0 !=
 	    compare_clock_identity(rxIdentity.clockIdentity,
-				   ptp->systemPriority.rootSystemIdentity.
-				   clockIdentity)) {
+				   ptp->systemPriority.
+				   rootSystemIdentity.clockIdentity)) {
 		transmit_pdelay_response(ptp, port, rxBuffer);
 	} else {
 		uint16_t rxPortNumber =
@@ -871,9 +876,8 @@ void gptp_tx_state_task(unsigned long data)
 							    (ptp, i,
 							     TRANSMITTED_PACKET,
 							     txBuffer,
-							     &ptp->
-							     ports[i].
-							     syncTxTimestamp);
+							     &ptp->ports
+							     [i].syncTxTimestamp);
 							transmit_fup(ptp,
 								     i);
 						} else {
@@ -882,15 +886,16 @@ void gptp_tx_state_task(unsigned long data)
 							    (ptp, i,
 							     TRANSMITTED_PACKET,
 							     txBuffer,
-							     &ptp->
-							     ports[i].
-							     syncTxTimestamp);
-							ptp->ports[i].
-							    syncTxLocalTimestampValid
+							     &ptp->ports
+							     [i].syncTxTimestamp);
+							ptp->
+							    ports
+							    [i].syncTxLocalTimestampValid
 							    = TRUE;
 							/* If the follow-up already arrived, forward it now. */
-							if (ptp->ports[i].
-							    fupPreciseOriginTimestampReceived)
+							if (ptp->
+							    ports
+							    [i].fupPreciseOriginTimestampReceived)
 							{
 								transmit_fup
 								    (ptp,
@@ -912,16 +917,15 @@ void gptp_tx_state_task(unsigned long data)
 								       i,
 								       TRANSMITTED_PACKET,
 								       txBuffer,
-								       &ptp->
-								       ports
-								       [i].
-								       delayReqTxTimestampTemp);
+								       &ptp->ports
+								       [i].delayReqTxTimestampTemp);
 						get_local_hardware_timestamp
 						    (ptp, i,
 						     TRANSMITTED_PACKET,
 						     txBuffer,
-						     &ptp->ports[i].
-						     delayReqTxLocalTimestampTemp);
+						     &ptp->
+						     ports
+						     [i].delayReqTxLocalTimestampTemp);
 
 					}
 					break;
@@ -938,10 +942,12 @@ void gptp_tx_state_task(unsigned long data)
 						    (ptp, i,
 						     TRANSMITTED_PACKET,
 						     txBuffer,
-						     &ptp->ports[i].
-						     pdelayReqTxTimestamp);
-						ptp->ports[i].
-						    rcvdMDTimestampReceive
+						     &ptp->
+						     ports
+						     [i].pdelayReqTxTimestamp);
+						ptp->
+						    ports
+						    [i].rcvdMDTimestampReceive
 						    = TRUE;
 						MDPdelayReq_StateMachine
 						    (ptp, i);

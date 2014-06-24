@@ -264,17 +264,17 @@
 
 /* 802.1AS MDPdelayReq state machine states */
 typedef enum { MDPdelayReq_NOT_ENABLED,
-	    MDPdelayReq_INITIAL_SEND_PDELAY_REQ,
+	MDPdelayReq_INITIAL_SEND_PDELAY_REQ,
 	MDPdelayReq_RESET, MDPdelayReq_SEND_PDELAY_REQ,
-	    MDPdelayReq_WAITING_FOR_PDELAY_RESP,
+	MDPdelayReq_WAITING_FOR_PDELAY_RESP,
 	MDPdelayReq_WAITING_FOR_PDELAY_RESP_FOLLOW_UP,
-	    MDPdelayReq_WAITING_FOR_PDELAY_INTERVAL_TIMER,
+	MDPdelayReq_WAITING_FOR_PDELAY_INTERVAL_TIMER,
 	MDPdelayReq_LOST_RESPONSE
 } MDPdelayReq_State_t;
 
 /* 802.1AS LinkDelaySyncIntervalSettings state machine states */
 typedef enum { LinkDelaySyncIntervalSetting_NOT_ENABLED,
-	    LinkDelaySyncIntervalSetting_INITIALIZE,
+	LinkDelaySyncIntervalSetting_INITIALIZE,
 	LinkDelaySyncIntervalSetting_SET_INTERVALS
 } LinkDelaySyncIntervalSetting_State_t;
 
@@ -282,9 +282,9 @@ typedef enum { LinkDelaySyncIntervalSetting_NOT_ENABLED,
 typedef enum { PortAnnounceInformation_BEGIN,
 	PortAnnounceInformation_DISABLED, PortAnnounceInformation_AGED,
 	PortAnnounceInformation_UPDATE,
-	    PortAnnounceInformation_SUPERIOR_MASTER_PORT,
+	PortAnnounceInformation_SUPERIOR_MASTER_PORT,
 	PortAnnounceInformation_REPEATED_MASTER_PORT,
-	    PortAnnounceInformation_INFERIOR_MASTER_OR_OTHER_PORT,
+	PortAnnounceInformation_INFERIOR_MASTER_OR_OTHER_PORT,
 	PortAnnounceInformation_CURRENT, PortAnnounceInformation_RECEIVE
 } PortAnnounceInformation_State_t;
 
@@ -293,7 +293,7 @@ typedef enum { InfoIs_Disabled, InfoIs_Received, InfoIs_Aged, InfoIs_Mine
 
 /* 802.1AS PortRoleSelection state machine states */
 typedef enum { PortRoleSelection_INIT_BRIDGE,
-	    PortRoleSelection_ROLE_SELECTION
+	PortRoleSelection_ROLE_SELECTION
 } PortRoleSelection_State_t;
 
 #define SIGNED_SHIFT(a, b) (((b) >= 0) ? ((a)<<(b)) : ((a)>>(-b)))
@@ -461,7 +461,7 @@ struct ptp_port {
 	uint32_t prevPdelayReqSequenceId;
 
 	/* 802.1AS LinkDelaySyncIntervalSetting variables (11.2.17.1) */
-	LinkDelaySyncIntervalSetting_State_t
+	 LinkDelaySyncIntervalSetting_State_t
 	    linkDelaySyncIntervalSetting_State;
 	uint32_t rcvdSignalingMsg1;
 	uint8_t *rcvdSignalingPtr;

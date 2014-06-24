@@ -87,10 +87,8 @@ void update_rtc_lock_detect(struct ptp_device *ptp)
 			 */
 			if ((ptp->rtcLastOffset >
 			     -lockRangeSigned) & (ptp->rtcLastOffset <
-						  lockRangeSigned) & (ptp->
-								      rtcLastIncrementDelta
-								      >
-								      -0x1000)
+						  lockRangeSigned) &
+			    (ptp->rtcLastIncrementDelta > -0x1000)
 			    & (ptp->rtcLastIncrementDelta < 0x1000)) {
 				/* Within lock range, check counter */
 				if (++ptp->rtcLockCounter >=
@@ -120,11 +118,9 @@ void update_rtc_lock_detect(struct ptp_device *ptp)
 						  lockRangeSigned)) {
 				/* Out of the lock range, see if it's past the "immediately unlock" threshold */
 				if ((ptp->rtcLastOffset <
-				     -unlockThreshSigned) | (ptp->
-							     rtcLastOffset
-							     >
-							     unlockThreshSigned))
-				{
+				     -unlockThreshSigned) |
+				    (ptp->rtcLastOffset >
+				     unlockThreshSigned)) {
 					/* Way out of range, unlock immediately and send a Netlink message */
 					ptp->rtcLockState =
 					    PTP_RTC_UNLOCKED;
@@ -185,13 +181,15 @@ static void computeDelayRateRatio(struct ptp_device *ptp, uint32_t port)
 		uint64_t rateRatio;
 		int shift;
 
-		timestamp_difference(&ptp->ports[port].
-				     delayReqTxLocalTimestamp,
-				     &ptp->ports[port].
-				     pdelayRespTxTimestampI, &difference2);
+		timestamp_difference(&ptp->
+				     ports[port].delayReqTxLocalTimestamp,
+				     &ptp->
+				     ports[port].pdelayRespTxTimestampI,
+				     &difference2);
 		timestamp_difference(&ptp->ports[port].delayReqRxTimestamp,
-				     &ptp->ports[port].
-				     pdelayRespRxTimestampI, &difference);
+				     &ptp->
+				     ports[port].pdelayRespRxTimestampI,
+				     &difference);
 
 		/* The raw differences have been computed; sanity-check the peer delay timestamps; if the
 		 * initial Tx or Rx timestamp is later than the present one, the initial ones are bogus and
@@ -224,12 +222,14 @@ static void computeDelayRateRatio(struct ptp_device *ptp, uint32_t port)
 				if (((uint32_t) rateRatio < RATE_RATIO_MAX)
 				    && ((uint32_t) rateRatio >
 					RATE_RATIO_MIN)) {
-					ptp->ports[port].
-					    neighborRateRatio =
+					ptp->
+					    ports[port].neighborRateRatio =
 					    (uint32_t) rateRatio;
 
-					ptp->ports[port].
-					    neighborRateRatioValid = TRUE;
+					ptp->
+					    ports
+					    [port].neighborRateRatioValid =
+					    TRUE;
 
 					/* Master rate is the same for E2E mode */
 					ptp->masterRateRatio =
@@ -237,10 +237,14 @@ static void computeDelayRateRatio(struct ptp_device *ptp, uint32_t port)
 					ptp->masterRateRatioValid = TRUE;
 				} else {
 					/* If we are outside the acceptable range, assume our initial values are bad and grab new ones */
-					ptp->ports[port].
-					    initPdelayRespReceived = FALSE;
-					ptp->ports[port].
-					    neighborRateRatioValid = FALSE;
+					ptp->
+					    ports
+					    [port].initPdelayRespReceived =
+					    FALSE;
+					ptp->
+					    ports
+					    [port].neighborRateRatioValid =
+					    FALSE;
 					ptp->masterRateRatioValid = FALSE;
 				}
 			}
@@ -290,14 +294,17 @@ void rtc_update_servo(struct ptp_device *ptp, uint32_t port)
 			 *
 			 * Offset_m_s = [(SYNC_Rx - SYNC_Tx) + (DELAY_REQ_Tx - DELAY_REQ_Rx)] / 2
 			 */
-			timestamp_difference(&ptp->ports[port].
-					     syncRxTimestamp,
-					     &ptp->ports[port].
-					     syncTxTimestamp, &difference);
-			timestamp_difference(&ptp->ports[port].
-					     delayReqTxTimestamp,
-					     &ptp->ports[port].
-					     delayReqRxTimestamp,
+			timestamp_difference(&ptp->
+					     ports[port].syncRxTimestamp,
+					     &ptp->
+					     ports[port].syncTxTimestamp,
+					     &difference);
+			timestamp_difference(&ptp->
+					     ports
+					     [port].delayReqTxTimestamp,
+					     &ptp->
+					     ports
+					     [port].delayReqRxTimestamp,
 					     &difference2);
 
 			/* The fact that this is called at all implies there's a < 1 sec slaveOffset; deal
@@ -322,10 +329,11 @@ void rtc_update_servo(struct ptp_device *ptp, uint32_t port)
 			 * [SYNC Rx time - SYNC Tx time] = slave_error + link_delay
 			 * slaveOffset = slave_error + link_delay - link delay
 			 */
-			timestamp_difference(&ptp->ports[port].
-					     syncRxTimestamp,
-					     &ptp->ports[port].
-					     syncTxTimestamp, &difference);
+			timestamp_difference(&ptp->
+					     ports[port].syncRxTimestamp,
+					     &ptp->
+					     ports[port].syncTxTimestamp,
+					     &difference);
 			slaveOffset =
 			    difference.nanoseconds -
 			    ptp->ports[port].neighborPropDelay;
@@ -354,9 +362,9 @@ void rtc_update_servo(struct ptp_device *ptp, uint32_t port)
 			uint64_t tempRate;
 			// Convert from 2^-41 - (1.0) back to something in the 2^-31 range and add the 1.0 back in
 			tempRate =
-			    (((int32_t) ptp->ports[port].
-			      cumulativeScaledRateOffset) >> 10) +
-			    0x80000000;
+			    (((int32_t) ptp->
+			      ports[port].cumulativeScaledRateOffset) >>
+			     10) + 0x80000000;
 
 			// Get the cumulative rate ratio, including our neighbor
 			tempRate =
@@ -415,12 +423,14 @@ void rtc_update_servo(struct ptp_device *ptp, uint32_t port)
 			}
 		} else {
 			newRtcIncrement =
-			    (ptp->nominalIncrement.
-			     mantissa & RTC_MANTISSA_MASK);
+			    (ptp->
+			     nominalIncrement.mantissa &
+			     RTC_MANTISSA_MASK);
 			newRtcIncrement <<= RTC_MANTISSA_SHIFT;
 			newRtcIncrement |=
-			    (ptp->nominalIncrement.
-			     fraction & RTC_FRACTION_MASK);
+			    (ptp->
+			     nominalIncrement.fraction &
+			     RTC_FRACTION_MASK);
 		}
 
 		/* Operate in two distinct modes; a high-gain, purely-proportional control loop
@@ -545,10 +555,11 @@ void rtc_update_servo(struct ptp_device *ptp, uint32_t port)
 			printk("Slave offset %d\n", slaveOffset);
 			printk
 			    ("  syncRxNS %d, syncTxNS %d (%d), MeanPathNS %d\n",
-			     (int) ptp->ports[port].syncRxTimestamp.
-			     nanoseconds,
-			     (int) ptp->ports[port].syncTxTimestamp.
-			     nanoseconds, (int) difference.nanoseconds,
+			     (int) ptp->ports[port].
+			     syncRxTimestamp.nanoseconds,
+			     (int) ptp->ports[port].
+			     syncTxTimestamp.nanoseconds,
+			     (int) difference.nanoseconds,
 			     (int) ptp->ports[port].neighborPropDelay);
 			printk("RTC increment 0x%08X", newRtcIncrement);
 			if (adjustment == INCREMENT_DELTA_MIN) {

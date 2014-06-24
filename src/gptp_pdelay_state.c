@@ -50,14 +50,16 @@ static void computePdelayRateRatio(struct ptp_device *ptp, uint32_t port)
 		uint64_t rateRatio;
 		int shift;
 
-		timestamp_difference(&ptp->ports[port].
-				     pdelayRespTxTimestamp,
-				     &ptp->ports[port].
-				     pdelayRespTxTimestampI, &difference);
-		timestamp_difference(&ptp->ports[port].
-				     pdelayRespRxTimestamp,
-				     &ptp->ports[port].
-				     pdelayRespRxTimestampI, &difference2);
+		timestamp_difference(&ptp->
+				     ports[port].pdelayRespTxTimestamp,
+				     &ptp->
+				     ports[port].pdelayRespTxTimestampI,
+				     &difference);
+		timestamp_difference(&ptp->
+				     ports[port].pdelayRespRxTimestamp,
+				     &ptp->
+				     ports[port].pdelayRespRxTimestampI,
+				     &difference2);
 
 		/* Keep rolling the interval forward or we will react really slowly to changes in our
 		 * rate relative to our neighbor.
@@ -126,14 +128,16 @@ static void computePropTime(struct ptp_device *ptp, uint32_t port)
 		uint64_t nsResponder;
 		uint64_t nsRequester;
 
-		timestamp_difference(&ptp->ports[port].
-				     pdelayRespTxTimestamp,
-				     &ptp->ports[port].
-				     pdelayReqRxTimestamp, &difference);
-		timestamp_difference(&ptp->ports[port].
-				     pdelayRespRxTimestamp,
-				     &ptp->ports[port].
-				     pdelayReqTxTimestamp, &difference2);
+		timestamp_difference(&ptp->
+				     ports[port].pdelayRespTxTimestamp,
+				     &ptp->
+				     ports[port].pdelayReqRxTimestamp,
+				     &difference);
+		timestamp_difference(&ptp->
+				     ports[port].pdelayRespRxTimestamp,
+				     &ptp->
+				     ports[port].pdelayReqTxTimestamp,
+				     &difference2);
 
 		nsResponder =
 		    ((uint64_t) difference.secondsLower) * 1000000000ULL +
@@ -242,8 +246,8 @@ static void MDPdelayReq_StateMachine_SetState(struct ptp_device *ptp,
 	case MDPdelayReq_WAITING_FOR_PDELAY_RESP_FOLLOW_UP:
 		get_source_port_id(ptp, port, RECEIVED_PACKET,
 				   ptp->ports[port].rcvdPdelayRespPtr,
-				   ptp->ports[port].
-				   lastRxRespSourcePortId);
+				   ptp->
+				   ports[port].lastRxRespSourcePortId);
 		ptp->ports[port].rcvdPdelayResp = FALSE;
 
 		/* Obtain the peer delay request receive timestamp that our peer has just sent.
@@ -255,10 +259,11 @@ static void MDPdelayReq_StateMachine_SetState(struct ptp_device *ptp,
 		/* Capture the hardware timestamp at which we received this packet, and hang on to
 		 * it for delay and rate calculation. (Trsp4 - our local clock) */
 		get_local_hardware_timestamp(ptp, port, RECEIVED_PACKET,
-					     ptp->ports[port].
-					     rcvdPdelayRespPtr,
-					     &ptp->ports[port].
-					     pdelayRespRxTimestamp);
+					     ptp->
+					     ports[port].rcvdPdelayRespPtr,
+					     &ptp->
+					     ports
+					     [port].pdelayRespRxTimestamp);
 		break;
 	case MDPdelayReq_WAITING_FOR_PDELAY_INTERVAL_TIMER:
 		ptp->ports[port].rcvdPdelayRespFollowUp = FALSE;
@@ -283,29 +288,29 @@ static void MDPdelayReq_StateMachine_SetState(struct ptp_device *ptp,
 				printk
 				    ("AS CHECK: pd %d, pdt %d, pidc %d, nrrv %d\n",
 				     ptp->ports[port].neighborPropDelay,
-				     ptp->ports[port].
-				     neighborPropDelayThresh,
-				     compare_clock_identity(ptp->
-							    ports[port].
-							    lastRxRespSourcePortId,
-							    ptp->
-							    properties.
-							    grandmasterIdentity),
-				     ptp->ports[port].
-				     neighborRateRatioValid);
+				     ptp->
+				     ports[port].neighborPropDelayThresh,
+				     compare_clock_identity(ptp->ports
+							    [port].lastRxRespSourcePortId,
+							    ptp->properties.grandmasterIdentity),
+				     ptp->
+				     ports[port].neighborRateRatioValid);
 
 				printk("AS CHECK: rxSourcePortID:");
 				for (i = 0; i < PORT_ID_BYTES; i++)
 					printk("%02X",
-					       ptp->ports[port].
-					       lastRxRespSourcePortId[i]);
+					       ptp->
+					       ports
+					       [port].lastRxRespSourcePortId
+					       [i]);
 				printk("\n");
 				printk("AS CHECK: thisClock:     ");
 				for (i = 0; i < PTP_CLOCK_IDENTITY_CHARS;
 				     i++)
 					printk("%02X",
-					       ptp->properties.
-					       grandmasterIdentity[i]);
+					       ptp->
+					       properties.grandmasterIdentity
+					       [i]);
 				printk("\n");
 			}
 #endif
@@ -327,17 +332,19 @@ static void MDPdelayReq_StateMachine_SetState(struct ptp_device *ptp,
 #endif
 			} else {
 				if (ptp->ports[port].asCapable
-				    && (ptp->ports[port].
-					neighborPropDelay >
-					ptp->ports[port].
-					neighborPropDelayThresh)) {
+				    && (ptp->
+					ports[port].neighborPropDelay >
+					ptp->
+					ports
+					[port].neighborPropDelayThresh)) {
 					printk
 					    ("Disabling port %d. Delay over threshold (%d ns > %d ns)\n",
 					     port + 1,
-					     ptp->ports[port].
-					     neighborPropDelay,
-					     ptp->ports[port].
-					     neighborPropDelayThresh);
+					     ptp->
+					     ports[port].neighborPropDelay,
+					     ptp->
+					     ports
+					     [port].neighborPropDelayThresh);
 				}
 				ptp->ports[port].asCapable = FALSE;
 #ifdef DEBUG_OUTPUT
@@ -365,7 +372,6 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 		/* The PDELAY state machine should only be active in P2P mode */
 		return;
 	}
-
 //  printk("PTP IDX %d, PE %d, PTTE %d, PDIT %d, PDRI %d\n", port, ptp->ports[port].portEnabled,
 //    ptp->ports[port].pttPortEnabled, ptp->ports[port].pdelayIntervalTimer, PDELAY_REQ_INTERVAL_TICKS(ptp, port));
 
@@ -402,8 +408,9 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 			/* Grab some inforomation needed for comparisons if we got a PDelay Response */
 			if (ptp->ports[port].rcvdPdelayResp) {
 				get_rx_requesting_port_id(ptp, port,
-							  ptp->ports[port].
-							  rcvdPdelayRespPtr,
+							  ptp->
+							  ports
+							  [port].rcvdPdelayRespPtr,
 							  rxRequestingPortId);
 				txBuffer =
 				    get_output_buffer(ptp, port,
@@ -415,22 +422,25 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 				rxSequenceId =
 				    get_sequence_id(ptp, port,
 						    RECEIVED_PACKET,
-						    ptp->ports[port].
-						    rcvdPdelayRespPtr);
+						    ptp->
+						    ports
+						    [port].rcvdPdelayRespPtr);
 				txSequenceId =
 				    get_sequence_id(ptp, port,
 						    TRANSMITTED_PACKET,
 						    txBuffer);
 				get_source_port_id(ptp, port,
 						   RECEIVED_PACKET,
-						   ptp->ports[port].
-						   rcvdPdelayRespPtr,
+						   ptp->
+						   ports
+						   [port].rcvdPdelayRespPtr,
 						   rxRespSourcePortId);
 			}
 			if (ptp->ports[port].rcvdPdelayRespFollowUp) {
 				get_rx_requesting_port_id(ptp, port,
-							  ptp->ports[port].
-							  rcvdPdelayRespFollowUpPtr,
+							  ptp->
+							  ports
+							  [port].rcvdPdelayRespFollowUpPtr,
 							  rxFUPRequestingPortId);
 				txBuffer =
 				    get_output_buffer(ptp, port,
@@ -442,16 +452,18 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 				rxFUPSequenceId =
 				    get_sequence_id(ptp, port,
 						    RECEIVED_PACKET,
-						    ptp->ports[port].
-						    rcvdPdelayRespFollowUpPtr);
+						    ptp->
+						    ports
+						    [port].rcvdPdelayRespFollowUpPtr);
 				txFUPSequenceId =
 				    get_sequence_id(ptp, port,
 						    TRANSMITTED_PACKET,
 						    txBuffer);
 				get_source_port_id(ptp, port,
 						   RECEIVED_PACKET,
-						   ptp->ports[port].
-						   rcvdPdelayRespFollowUpPtr,
+						   ptp->
+						   ports
+						   [port].rcvdPdelayRespFollowUpPtr,
 						   rxFUPSourcePortId);
 			}
 
@@ -473,8 +485,9 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 					     MDPdelayReq_INITIAL_SEND_PDELAY_REQ);
 				} else {
 					/* Don't time when this port is not enabled */
-					ptp->ports[port].
-					    pdelayIntervalTimer = 0;
+					ptp->
+					    ports[port].pdelayIntervalTimer
+					    = 0;
 				}
 				break;
 
@@ -495,8 +508,8 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 
 			case MDPdelayReq_INITIAL_SEND_PDELAY_REQ:
 			case MDPdelayReq_SEND_PDELAY_REQ:
-				if (ptp->ports[port].
-				    rcvdMDTimestampReceive) {
+				if (ptp->
+				    ports[port].rcvdMDTimestampReceive) {
 #ifdef PATH_DELAY_DEBUG
 					printk
 					    ("PDelay Request Tx Timestamp available (port index %d).\n",
@@ -507,8 +520,9 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 					MDPdelayReq_StateMachine_SetState
 					    (ptp, port,
 					     MDPdelayReq_WAITING_FOR_PDELAY_RESP);
-				} else if (ptp->ports[port].
-					   pdelayIntervalTimer >=
+				} else if (ptp->
+					   ports[port].pdelayIntervalTimer
+					   >=
 					   PDELAY_REQ_INTERVAL_TICKS(ptp,
 								     port))
 				{
@@ -531,7 +545,7 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 						printk
 						    ("Timeout WAITING_FOR_PDELAY_RESP\n");
 					
-#endif	/*  */
+#endif				/*  */
 					    MDPdelayReq_StateMachine_SetState
 					    (ptp, port,
 					     MDPdelayReq_LOST_RESPONSE);
@@ -545,17 +559,15 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 							printk
 							    ("Resetting %d: intervalTimer %d, reqInterval %d, rcvdPdelayResp %d, rcvdPdelayRespPtr %d, rxSequence %d, txSequence %d\n",
 							     port,
-							     ptp->
-							     ports[port].
-							     pdelayIntervalTimer,
+							     ptp->ports
+							     [port].pdelayIntervalTimer,
 							     PDELAY_REQ_INTERVAL_TICKS
 							     (ptp, port),
-							     ptp->
-							     ports[port].
-							     rcvdPdelayResp,
-							     (int) ptp->
-							     ports[port].
-							     rcvdPdelayRespPtr,
+							     ptp->ports
+							     [port].rcvdPdelayResp,
+							     (int)
+							     ptp->ports
+							     [port].rcvdPdelayRespPtr,
 							     rxSequenceId,
 							     txSequenceId);
 #endif
@@ -582,8 +594,10 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 #endif
 						// Ignore this resp.  Processing it is causing rapid fire req's.
 						//MDPdelayReq_StateMachine_SetState(ptp, port, MDPdelayReq_LOST_RESPONSE);
-						ptp->ports[port].
-						    rcvdPdelayResp = FALSE;
+						ptp->
+						    ports
+						    [port].rcvdPdelayResp =
+						    FALSE;
 					} else {	// Matching response
 						MDPdelayReq_StateMachine_SetState
 						    (ptp, port,
@@ -635,21 +649,19 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 							    ("Duplicate response received WAITING_FOR_PDELAY_RESP_FOLLOW_UP\n");
 							printk
 							    ("pdelayResponses %d multiplePdelayResponses %d prevPdelayReqSequenceId %d txSequenceId %d\n",
-							     ptp->
-							     ports[port].
-							     pdelayResponses,
-							     ptp->
-							     ports[port].
-							     multiplePdelayResponses,
-							     ptp->
-							     ports[port].
-							     prevPdelayReqSequenceId,
+							     ptp->ports
+							     [port].pdelayResponses,
+							     ptp->ports
+							     [port].multiplePdelayResponses,
+							     ptp->ports
+							     [port].prevPdelayReqSequenceId,
 							     txSequenceId);
 						}
 #endif
 						if (ptp->ports[port].pdelayResponses == 2) {	/* We've received more than one response to a req */
-							ptp->ports[port].
-							    multiplePdelayResponses++;
+							ptp->
+							    ports
+							    [port].multiplePdelayResponses++;
 							if (ptp->ports[port].multiplePdelayResponses > 1) {	/* We've had more than one multiple response occurrence */
 								if ((ptp->ports[port].prevPdelayReqSequenceId + 1) == txSequenceId) {	/* The occurrences are on consecutive reqs */
 									if (ptp->ports[port].multiplePdelayResponses >= 3) {	/* We've had too many multiple responses, disable */
@@ -658,24 +670,16 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 										     port
 										     +
 										     1,
-										     ptp->
-										     ports
-										     [port].
-										     pdelayResponses,
-										     ptp->
-										     ports
-										     [port].
-										     multiplePdelayResponses);
-										ptp->
-										    ports
-										    [port].
-										    multiplePdelayTimer
+										     ptp->ports
+										     [port].pdelayResponses,
+										     ptp->ports
+										     [port].multiplePdelayResponses);
+										ptp->ports
+										    [port].multiplePdelayTimer
 										    =
 										    ((5 * 60 * 1000) / PTP_TIMER_TICK_MS);
-										ptp->
-										    ports
-										    [port].
-										    portEnabled
+										ptp->ports
+										    [port].portEnabled
 										    =
 										    FALSE;
 										MDPdelayReq_StateMachine_SetState
@@ -686,17 +690,16 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 									}
 								} else {	/* The occurrences are not consecutive */
 									/* ...so this becomes the first of a new series */
-									ptp->
-									    ports
-									    [port].
-									    multiplePdelayResponses
+									ptp->ports
+									    [port].multiplePdelayResponses
 									    =
 									    1;
 								}
 							}
 							/* Save our sequence number to be compared against next time around */
-							ptp->ports[port].
-							    prevPdelayReqSequenceId
+							ptp->
+							    ports
+							    [port].prevPdelayReqSequenceId
 							    = txSequenceId;
 						}
 					}
@@ -709,8 +712,9 @@ void MDPdelayReq_StateMachine(struct ptp_device *ptp, uint32_t port)
 					{	// Non-matching follow up
 						// Ignore this follow up.  Processing it is causing failure of 15.2b1 due to rapid fire req's.
 						//MDPdelayReq_StateMachine_SetState(ptp, port, MDPdelayReq_LOST_RESPONSE);
-						ptp->ports[port].
-						    rcvdPdelayRespFollowUp
+						ptp->
+						    ports
+						    [port].rcvdPdelayRespFollowUp
 						    = FALSE;
 					} else {	// Matching follow up
 						MDPdelayReq_StateMachine_SetState
@@ -783,15 +787,17 @@ static void LinkDelaySyncIntervalSetting_StateMachine_SetState(struct
 			case (-128):	/* don't change the interval */
 				break;
 			case 126:	/* set interval to initial value */
-				ptp->ports[port].
-				    currentLogPdelayReqInterval =
-				    ptp->ports[port].
-				    initialLogPdelayReqInterval;
+				ptp->
+				    ports[port].currentLogPdelayReqInterval
+				    =
+				    ptp->
+				    ports
+				    [port].initialLogPdelayReqInterval;
 				break;
 			default:	/* use the indicated value */
-				ptp->ports[port].
-				    currentLogPdelayReqInterval =
-				    linkDelayInterval;
+				ptp->
+				    ports[port].currentLogPdelayReqInterval
+				    = linkDelayInterval;
 				break;
 			}
 
@@ -800,8 +806,8 @@ static void LinkDelaySyncIntervalSetting_StateMachine_SetState(struct
 				break;
 			case 126:	/* set interval to initial value */
 				ptp->ports[port].currentLogSyncInterval =
-				    ptp->ports[port].
-				    initialLogSyncInterval;
+				    ptp->
+				    ports[port].initialLogSyncInterval;
 				break;
 			default:	/* use indicated value */
 				ptp->ports[port].currentLogSyncInterval =
@@ -837,11 +843,13 @@ void LinkDelaySyncIntervalSetting_StateMachine(struct ptp_device *ptp,
 		LinkDelaySyncIntervalSetting_State_t prevState;
 		do {
 			prevState =
-			    ptp->ports[port].
-			    linkDelaySyncIntervalSetting_State;
+			    ptp->
+			    ports[port].linkDelaySyncIntervalSetting_State;
 
-			switch (ptp->ports[port].
-				linkDelaySyncIntervalSetting_State) {
+			switch (ptp->
+				ports
+				[port].linkDelaySyncIntervalSetting_State)
+			{
 			default:
 			case LinkDelaySyncIntervalSetting_NOT_ENABLED:
 				if (ptp->ports[port].portEnabled
@@ -864,7 +872,7 @@ void LinkDelaySyncIntervalSetting_StateMachine(struct ptp_device *ptp,
 			}
 
 		} while (prevState !=
-			 ptp->ports[port].
-			 linkDelaySyncIntervalSetting_State);
+			 ptp->
+			 ports[port].linkDelaySyncIntervalSetting_State);
 	}
 }

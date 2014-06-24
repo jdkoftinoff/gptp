@@ -311,9 +311,8 @@ int ptp_events_tx_rtc_increment_change(struct ptp_device *ptp)
 
 void ptp_work_send_rtc_increment_change(struct work_struct *work)
 {
-	struct ptp_device *ptp =
-	    container_of(work, struct ptp_device,
-			 work_send_rtc_increment_change);
+	struct ptp_device *ptp = container_of(work, struct ptp_device,
+					      work_send_rtc_increment_change);
 	struct sk_buff *skb;
 	uint8_t commandByte;
 	void *msgHead;

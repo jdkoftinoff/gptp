@@ -70,8 +70,8 @@ static void init_ptp_header(struct ptp_device *ptp, uint32_t port,
 		write_packet(txBuffer, wordOffset, 0x0180C200);
 		packetWord = 0x000E0000;
 		packetWord |=
-		    (((uint32_t) portProperties->
-		      sourceMacAddress[0]) << 8);
+		    (((uint32_t) portProperties->sourceMacAddress[0]) <<
+		     8);
 		packetWord |= portProperties->sourceMacAddress[1];
 		write_packet(txBuffer, wordOffset, packetWord);
 	} else {
@@ -79,8 +79,8 @@ static void init_ptp_header(struct ptp_device *ptp, uint32_t port,
 		write_packet(txBuffer, wordOffset, 0x011B1900);
 		packetWord = 0x00000000;
 		packetWord |=
-		    (((uint32_t) portProperties->
-		      sourceMacAddress[0]) << 8);
+		    (((uint32_t) portProperties->sourceMacAddress[0]) <<
+		     8);
 		packetWord |= portProperties->sourceMacAddress[1];
 		write_packet(txBuffer, wordOffset, packetWord);
 	}
@@ -103,8 +103,8 @@ static void init_ptp_header(struct ptp_device *ptp, uint32_t port,
 	/* Message length, domain number, and reserved field */
 	packetWord = ((messageLength & MSG_LENGTH_MASK) << 16);
 	packetWord |=
-	    ((((uint32_t) ptp->properties.
-	       domainNumber) & DOMAIN_NUM_MASK) << 8);
+	    ((((uint32_t) ptp->
+	       properties.domainNumber) & DOMAIN_NUM_MASK) << 8);
 	write_packet(txBuffer, wordOffset, packetWord);
 
 	/* Assign the passed flags into the flag field, clear the correction field */
@@ -721,8 +721,8 @@ static void set_timestamp(struct ptp_device *ptp, uint32_t port,
 		      (timestamp->secondsLower >> 16));
 	write_packet(bufferBase, &wordOffset, packetWord);
 	packetWord =
-	    ((timestamp->secondsLower << 16) | (timestamp->
-						nanoseconds >> 16));
+	    ((timestamp->
+	      secondsLower << 16) | (timestamp->nanoseconds >> 16));
 	write_packet(bufferBase, &wordOffset, packetWord);
 	packetWord = read_packet(bufferBase, &wordOffset);
 	packetWord &= 0x0000FFFF;
@@ -829,8 +829,8 @@ void transmit_announce(struct ptp_device *ptp, uint32_t port)
 			ptp->ports[port].announceSequenceId++);
 
 	set_log_message_interval(ptp, port, txBuffer,
-				 ptp->ports[port].
-				 currentLogAnnounceInterval);
+				 ptp->
+				 ports[port].currentLogAnnounceInterval);
 
 	/* All dynamic fields have been updated, transmit the packet */
 	transmit_packet(ptp, port, txBuffer);
@@ -885,8 +885,9 @@ void transmit_fup(struct ptp_device *ptp, uint32_t port)
 				     &ptp->ports[port].syncRxTimestamp,
 				     &residency);
 		timestamp_sum(&residency,
-			      &ptp->ports[port].
-			      lastFollowUpCorrectionField, &correction);
+			      &ptp->
+			      ports[port].lastFollowUpCorrectionField,
+			      &correction);
 		correctionField = correction.nanoseconds;
 
 		// Convert to 2^-41 - (1.0) from something in the 2^-31 range and remove the 1.0 back out
@@ -894,8 +895,8 @@ void transmit_fup(struct ptp_device *ptp, uint32_t port)
 		    (int32_t) ((ptp->masterRateRatio - 0x80000000) << 10);
 
 		set_timestamp(ptp, port, txFupBuffer,
-			      &ptp->ports[port].
-			      lastPreciseOriginTimestamp);
+			      &ptp->
+			      ports[port].lastPreciseOriginTimestamp);
 
 	} else {
 		/* Update the precise origin timestamp with the hardware timestamp from when
@@ -948,8 +949,8 @@ void transmit_delay_request(struct ptp_device *ptp, uint32_t port)
 	get_rtc_time(ptp, &presentTime);
 	set_timestamp(ptp, port, txBuffer, &presentTime);
 	set_log_message_interval(ptp, port, txBuffer,
-				 ptp->ports[port].
-				 currentLogPdelayReqInterval);
+				 ptp->
+				 ports[port].currentLogPdelayReqInterval);
 
 	/* All dynamic fields have been updated, transmit the packet */
 	transmit_packet(ptp, port, txBuffer);
@@ -1035,11 +1036,10 @@ void transmit_pdelay_response(struct ptp_device *ptp, uint32_t port,
 				     requestRxBuffer,
 				     &pdelayReqRxTimestamp);
 
-			set_timestamp(ptp, port, txBuffer,
-				      &pdelayReqRxTimestamp);
-			/* All dynamic fields have been updated, transmit the packet */
-			transmit_packet(ptp, port, txBuffer);
-			ptp->ports[port].stats.txPDelayResponseCount++;
+	set_timestamp(ptp, port, txBuffer, &pdelayReqRxTimestamp);
+	/* All dynamic fields have been updated, transmit the packet */
+	transmit_packet(ptp, port, txBuffer);
+	ptp->ports[port].stats.txPDelayResponseCount++;
 }
 
 /* Transmits a PDELAY_RESP_FUP message related to the last PDELAY_RESP message that was
@@ -1088,7 +1088,7 @@ void transmit_pdelay_response_fup(struct ptp_device *ptp, uint32_t port)
 /* Returns the type of PTP message contained within the passed receive buffer, or
  * PACKET_NOT_PTP if the buffer does not contain a valid PTP datagram.
  */
-uint32_t get_message_type(struct ptp_device * ptp, uint32_t port,
+uint32_t get_message_type(struct ptp_device *ptp, uint32_t port,
 			  uint8_t * rxBuffer)
 {
 	uint32_t wordOffset;
