@@ -297,7 +297,7 @@ typedef struct {
 #define IOC_PTP_GET_AS_GRANDMASTER  _IOR('p', 0x1e, PtpProperties)
 
 /* Path Trace */
-#define PTP_MAX_PATH_TRACE 18
+#define PTP_MAX_PATH_TRACE 179
 typedef struct {
 	uint32_t index;		/* Port index to get Path Trace Data from */
 	uint32_t pathTraceLength;
